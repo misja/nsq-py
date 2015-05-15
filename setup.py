@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import sys
-from nsq import __version__
+from nsq2 import __version__
 
 extra = {}
 
@@ -9,7 +9,7 @@ if sys.version_info >= (3,):
     extra['use_2to3'] = True
 
 
-setup(name               = 'nsq-py',
+setup(name               = 'nsq2-py',
     version              = __version__,
     description          = 'NSQ for Python With Pure Sockets',
     url                  = 'http://github.com/dlecocq/nsq-py',
@@ -17,8 +17,8 @@ setup(name               = 'nsq-py',
     author_email         = 'dan@moz.com',
     license              = "MIT License",
     keywords             = 'nsq, queue',
-    packages             = ['nsq', 'nsq.http', 'nsq.sockets'],
-    package_dir          = {'nsq': 'nsq', 'nsq.http': 'nsq/http', 'nsq.sockets': 'nsq/sockets'},
+    packages             = ['nsq2', 'nsq2.http', 'nsq2.sockets'],
+    package_dir          = {'nsq2': 'nsq2', 'nsq2.http': 'nsq2/http', 'nsq2.sockets': 'nsq2/sockets'},
     classifiers          = [
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
