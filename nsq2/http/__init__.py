@@ -38,7 +38,7 @@ def json_wrap(function):
     return inner
 
 
-def ok_check(function, *args, **kwargs):
+def ok_check(function):
     '''Ensure that the response body is OK'''
     @wraps(function)
     def inner(*args, **kwargs):
