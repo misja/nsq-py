@@ -58,7 +58,7 @@ class BaseClient(object):
     def __init__(self, target, **params):
         if isinstance(target, basestring):
             self._host = target
-        if isinstance(target, (tuple, list)):
+        elif isinstance(target, (tuple, list)):
             self._host = url.parse('http://%s:%s/' % target)
         else:
             raise TypeError('Host must be a string or tuple')
