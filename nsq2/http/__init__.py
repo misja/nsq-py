@@ -1,47 +1,52 @@
 '''Our clients for interacting with various clients'''
 
-from decorator import decorator
-import requests
-import url
 
+import requests
+from functools import wraps
 from .. import json, logger
 from ..exceptions import NSQException
 
 
-@decorator
-def wrap(function, *args, **kwargs):
+def wrap(function):
     '''Wrap a function that returns a request with some exception handling'''
-    try:
-        req = function(*args, **kwargs)
-        logger.debug('Got %s: %s', req.status_code, req.content)
-        if req.status_code == 200:
-            return req
-        else:
-            raise ClientException(req.reason, req.content)
-    except ClientException:
-        raise
-    except Exception as exc:
-        raise ClientException(exc)
+    @wraps(function)
+    def inner(*args, **kwargs):
+        try:
+            req = function(*args, **kwargs)
+            logger.debug('Got %s: %s', req.status_code, req.content)
+            if req.status_code == 200:
+                return req
+            else:
+                raise ClientException(req.reason, req.content)
+        except ClientException:
+            raise
+        except Exception as exc:
+            raise ClientException(exc)
+    return inner
 
 
-@decorator
-def json_wrap(function, *args, **kwargs):
+def json_wrap(function):
     '''Return the json content of a function that returns a request'''
-    try:
-        # Some responses have data = None, but they generally signal a
-        # successful API call as well.
-        return json.loads(function(*args, **kwargs).content)['data'] or True
-    except Exception as exc:
-        raise ClientException(exc)
+    @wraps(function)
+    def inner(*args, **kwargs):
+        try:
+            # Some responses have data = None, but they generally signal a
+            # successful API call as well.
+            return json.loads(function(*args, **kwargs).content)['data'] or True
+        except Exception as exc:
+            raise ClientException(exc)
+    return inner
 
 
-@decorator
 def ok_check(function, *args, **kwargs):
     '''Ensure that the response body is OK'''
-    req = function(*args, **kwargs)
-    if req.content.lower() != 'ok':
-        raise ClientException(req.content)
-    return req.content
+    @wraps(function)
+    def inner(*args, **kwargs):
+        req = function(*args, **kwargs)
+        if req.content.lower() != 'ok':
+            raise ClientException(req.content)
+        return req.content
+    return inner
 
 
 class ClientException(NSQException):
@@ -52,8 +57,8 @@ class BaseClient(object):
     '''Base client class'''
     def __init__(self, target, **params):
         if isinstance(target, basestring):
-            self._host = url.parse(target)
-        elif isinstance(target, (tuple, list)):
+            self._host = target
+        if isinstance(target, (tuple, list)):
             self._host = url.parse('http://%s:%s/' % target)
         else:
             raise TypeError('Host must be a string or tuple')
