@@ -5,7 +5,7 @@ import requests
 from functools import wraps
 from .. import json, logger
 from ..exceptions import NSQException
-
+from six.moves.urllib.parse import urljoin
 
 def wrap(function):
     '''Wrap a function that returns a request with some exception handling'''
@@ -57,9 +57,9 @@ class BaseClient(object):
     '''Base client class'''
     def __init__(self, target, **params):
         if isinstance(target, basestring):
-            self._host = target
+            self._host = 'http://%s/' % target
         elif isinstance(target, (tuple, list)):
-            self._host = url.parse('http://%s:%s/' % target)
+            self._host = 'http://%s:%s/' % target
         else:
             raise TypeError('Host must be a string or tuple')
         self._params = params
@@ -67,7 +67,7 @@ class BaseClient(object):
     @wrap
     def get(self, path, *args, **kwargs):
         '''GET the provided endpoint'''
-        target = self._host.relative(path).utf8()
+        target = urljoin(self._host, path)
         params = kwargs.get('params', {})
         params.update(self._params)
         kwargs['params'] = params
@@ -77,7 +77,7 @@ class BaseClient(object):
     @wrap
     def post(self, path, *args, **kwargs):
         '''POST to the provided endpoint'''
-        target = self._host.relative(path).utf8()
+        target = urljoin(self._host, path)
         params = kwargs.get('params', {})
         params.update(self._params)
         kwargs['params'] = params
